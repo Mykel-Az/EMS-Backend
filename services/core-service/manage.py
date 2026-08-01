@@ -3,11 +3,10 @@
 import os, environ
 import sys
  # Read environment variables from .env file
-
+environ.Env.read_env() 
 
 def main():
     """Run administrative tasks."""
-    environ.Env.read_env() 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.local')
     try:
         from django.core.management import execute_from_command_line

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
 from ems_shared.auth.jwt import verify_token, TokenError
@@ -37,6 +38,7 @@ class RegisterUserView(generics.CreateAPIView):
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(request=LoginSerializer, responses=UserSerializer)
     def post(self, request):
         serializer = LoginSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -50,6 +52,7 @@ class LoginView(APIView):
 class RefreshView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(request=RefreshTokenSerializer, responses=AccessTokenSerializer)
     def post(self, request):
         refresh_token = request.data.get("refresh")
         if not refresh_token:
@@ -83,6 +86,8 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
 
 
 class ChangePasswordView(APIView):
+
+    @extend_schema(request=UserPasswordChangeSerializer, responses=None)
     def post(self, request):
         serializer = UserPasswordChangeSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)

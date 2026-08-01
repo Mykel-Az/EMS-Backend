@@ -19,6 +19,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         style={'input_type': 'password'},
         min_length=8,
         )
+    
 
     class Meta:
         model = User
@@ -32,7 +33,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'school', 'phone_number']
+        fields = ['school', 'phone_number']
 
 
 class UserPasswordChangeSerializer(serializers.Serializer):
@@ -93,3 +94,9 @@ class LoginSerializer(serializers.Serializer):
 
         attrs["user"] = user
         return attrs
+
+class RefreshTokenSerializer(serializers.Serializer):
+    refresh = serializers.CharField(write_only=True)
+
+class AccessTokenSerializer(serializers.Serializer):
+    access = serializers.CharField(read_only=True)

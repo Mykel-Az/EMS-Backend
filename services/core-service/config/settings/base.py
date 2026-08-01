@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'school_core.middleware.TenantScopeMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -102,8 +103,8 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-JWT_PRIVATE_KEY = env("JWT_PRIVATE_KEY")
-JWT_PUBLIC_KEY = env("JWT_PUBLIC_KEY")
+JWT_PRIVATE_KEY = env("JWT_PRIVATE_KEY").replace("\\n", "\n")
+JWT_PUBLIC_KEY = env("JWT_PUBLIC_KEY").replace("\\n", "\n")
 
 
 SIMPLE_JWT = {

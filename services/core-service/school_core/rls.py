@@ -25,7 +25,7 @@ BEGIN
         ) THEN
             EXECUTE format(
                 'CREATE POLICY tenant_isolation_policy ON %I.%I
-                USING (school_id = current_setting(''app.current_school_id'')::uuid);',
+                USING (school_id = current_setting(''app.current_school_id'')::bigint);',
                 'public', r.table_name
             );
         END IF;

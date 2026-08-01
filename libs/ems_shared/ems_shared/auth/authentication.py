@@ -19,7 +19,7 @@ class SharedJWTAuthentication(BaseAuthentication):
         except TokenError as e:
             raise AuthenticationFailed(str(e))
 
-        if payload.get("type") != "access":
+        if payload.get("token_type") != "access":
             raise AuthenticationFailed("Not an access token")
 
         try:
