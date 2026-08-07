@@ -16,8 +16,9 @@ class TokenError(Exception):
 
 def verify_token(token: str) -> dict:
     try:
-        return pyjwt.decode(token, PUBLIC_KEY, algorithms=[ALGORITHM])
+        payload = pyjwt.decode(token, PUBLIC_KEY, algorithms=[ALGORITHM])
     except pyjwt.ExpiredSignatureError:
         raise TokenError("Token has expired")
-    except pyjwt.InvalidTokenError:
-        raise TokenError("Invalid token")
+    except pyjwt.InvalidTokenError as e:
+        raise TokenError(str(e))
+    return payload

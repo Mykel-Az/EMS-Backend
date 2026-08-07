@@ -1,5 +1,6 @@
 from django.db import connection, transaction
 from ems_shared.auth.jwt import verify_token, TokenError
+from .tenant import set_current_school_id, clear_current_school_id
 
 
 class TenantScopeMiddleware:
@@ -16,33 +17,25 @@ class TenantScopeMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if connection.vendor != "postgresql":
-            return self.get_response(request)
-
         school_id = self._extract_school_id(request)
+        set_current_school_id(school_id)
 
-        # SET LOCAL only holds for the current transaction. Autocommit
-        # mode treats each statement as its own transaction, so without
-        # wrapping the whole request in atomic(), the setting would
-        # vanish before the view's queries ever ran.
-        with transaction.atomic():
-            with connection.cursor() as cursor:
-                if school_id is not None:
-                    cursor.execute(
-                        "SET LOCAL app.current_school_id = %s", [str(school_id)]
-                    )
-                else:
-                    # No usable tenant context (unauthenticated request,
-                    # register/login, or a user with no school). Set an
-                    # impossible id rather than leaving it unset — any
-                    # RLS-protected table then just returns zero rows
-                    # instead of throwing "unrecognized configuration
-                    # parameter". Fail closed, not open.
-                    cursor.execute("SET LOCAL app.current_school_id = '-1'")
+        try:
+            if connection.vendor != "postgresql":
+                return self.get_response(request)
 
-            response = self.get_response(request)
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    if school_id is not None:
+                        cursor.execute("SET LOCAL app.current_school_id = %s", [str(school_id)])
+                    else:
+                        cursor.execute("SET LOCAL app.current_school_id = '-1'")
+                response = self.get_response(request)
+            return response
 
-        return response
+        finally:
+            clear_current_school_id()
+
 
     def _extract_school_id(self, request):
         auth_header = request.headers.get("Authorization")
@@ -58,5 +51,8 @@ class TenantScopeMiddleware:
 
         if payload.get("token_type") != "access":
             return None
+
+        if payload.get("is_superuser"):
+            return "ALL"
 
         return payload.get("school_id")

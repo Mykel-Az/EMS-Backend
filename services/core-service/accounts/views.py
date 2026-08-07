@@ -11,6 +11,7 @@ from .serializer import *
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
+    refresh["is_superuser"] = user.is_superuser
     refresh["school_id"] = str(user.school_id) if user.school_id else None
     refresh["email"] = user.email
     return {
